@@ -50,3 +50,6 @@ def test_report_with_enrichment(tmp_path):
     text = md_path.read_text(encoding="utf-8")
     assert "NG" in text
     assert "Country" in text
+    assert "AS29465" in text          # ASN column in Top source IPs
+    assert "NgREN" in text            # org column
+    assert "Top ASNs" in text         # per-ASN aggregation section

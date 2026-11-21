@@ -43,6 +43,20 @@ def _enriched_sources(agg, enricher):
     return rows
 
 
+def _top_asns(sources):
+    """Aggregate enriched sources by ASN → total events (report-ready rows)."""
+    totals = {}
+    for s in sources:
+        asn = s.get("asn")
+        if not asn:
+            continue
+        key = (asn, s.get("org") or "", s.get("country") or "")
+        totals[key] = totals.get(key, 0) + s["count"]
+    return [[asn, org or "—", country or "—", count]
+            for (asn, org, country), count in
+            sorted(totals.items(), key=lambda item: -item[1])]
+
+
 def _table(rows, headers):
     lines = [
         "| " + " | ".join(str(h) for h in headers) + " |",
@@ -78,19 +92,33 @@ def _markdown(config, agg, sources, lookback):
     out.extend(["## Top source IPs", ""])
     if sources:
         has_geo = any(s.get("country") for s in sources)
+        has_asn = any(s.get("asn") for s in sources)
         headers = ["IP", "Events", "Protocols", "First seen", "Last seen"]
+        row_geo_at = None
         if has_geo:
             headers.insert(3, "Country")
+            row_geo_at = 3
+        if has_asn:
+            at = (row_geo_at or 0) + 1 if row_geo_at else 3
+            headers[at:at] = ["ASN", "Org"]
         rows = []
         for s in sources[:TOP_SOURCES]:
             row = [s["ip"], s["count"], ", ".join(s["protocols"]),
                    s["first"] or "?", s["last"] or "?"]
             if has_geo:
                 row.insert(3, s.get("country") or "—")
+            if has_asn:
+                at = 4 if has_geo else 3
+                row[at:at] = [s.get("asn") or "—", s.get("org") or "—"]
             rows.append(row)
         out.extend([_table(rows, headers), ""])
     else:
         out.extend(["_No events yet — run a sensor and let the internet knock._", ""])
+
+    top_asns = _top_asns(sources)
+    if top_asns:
+        _section(out, "Top ASNs", top_asns[:TOP_ROWS],
+                 ["ASN", "Org", "Country", "Events"])
 
     _section(out, "Protocol breakdown", list(agg["protocols"].items()),
              ["Protocol", "Events"])

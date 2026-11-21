@@ -79,6 +79,38 @@ def test_telnet_honeypot_captures_credentials(tmp_path):
     assert auth[0]["details"] == {"username": "root", "password": "1234"}
 
 
+def test_telnet_honeypot_strips_iac_and_replies(tmp_path):
+    sensor, port = _sensor(tmp_path, "telnet")
+    sensor.start()
+    time.sleep(0.1)
+    try:
+        with socket.create_connection(("127.0.0.1", port), timeout=5) as conn:
+            conn.settimeout(2.0)
+            time.sleep(0.1)
+            # negotiate: IAC DO TERMINAL-TYPE(24) → server must answer WONT 24
+            conn.sendall(bytes((255, 253, 24)))
+            got = b""
+            deadline = time.time() + 2.0
+            while bytes((255, 252, 24)) not in got and time.time() < deadline:
+                try:
+                    got += conn.recv(1024)
+                except socket.timeout:
+                    break
+            assert bytes((255, 252, 24)) in got        # IAC WONT 24 replied
+            # username with an embedded NOP must land clean
+            conn.sendall(bytes((255, 241)) + b"root\n")
+            time.sleep(0.1)
+            conn.sendall(b"1234\n")
+            time.sleep(0.1)
+    finally:
+        sensor.stop()
+    events = _wait_for(
+        tmp_path, lambda evs: any(e["event_type"] == "auth" for e in evs))
+    auth = [e for e in events if e["event_type"] == "auth"]
+    assert auth
+    assert auth[0]["details"] == {"username": "root", "password": "1234"}
+
+
 def test_ssh_honeypot_captures_banner(tmp_path):
     sensor, port = _sensor(tmp_path, "ssh")
     sensor.start()

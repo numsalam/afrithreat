@@ -32,10 +32,10 @@ NUMAWARE.
 ```
 
 - **http** — logs every request: method, path, headers, body. Answers 404 so scanners keep coming back.
-- **telnet** — plays a login dialog, captures every username/password attempt, then a fake shell that logs commands and executes nothing.
+- **telnet** — plays a login dialog, captures every username/password attempt, then a fake shell that logs commands and executes nothing. RFC 854 IAC negotiation bytes are stripped (and answered like a minimal server), so credentials land clean even from negotiating clients.
 - **ssh** — completes a **real SSH-2 key exchange** (pure-Python transport: DH group14-sha256/group1-sha1, RSA host key, aes128-ctr, hmac-sha2-256/sha1), then captures **every username/password/public-key attempt** and always refuses. No channels, no shells, no execution.
 - **collector** — aggregates by source IP, protocol, credentials, paths, banners, sensor host, and hour.
-- **enrichment** — pluggable; offline CSV (`network,country,asn,org`, CIDR supported), no network calls.
+- **enrichment** — pluggable; offline CSV (`network,country,asn,org`, CIDR supported), no network calls; ASN/org columns and a per-ASN event breakdown appear in reports when the data is present.
 - **reports** — Markdown for humans, JSON for machines; optionally auto-committed and pushed to git on a weekly schedule.
 
 ## Quickstart
@@ -143,8 +143,8 @@ sudo systemctl enable --now afrithreat-report.timer
 ## Roadmap
 
 - **v1** — HTTP + Telnet + SSH-banner sensors, JSONL event log, collector, Markdown/JSON reports, offline CSV enrichment, per-IP connection caps.
-- **v2 (this)** — full SSH-2 key exchange + credential capture (pure-Python transport), central token-gated collector for multi-host fleets (`push` / `collect-server`), per-sensor-host report breakdown, weekly report automation (cron/systemd + git auto-commit/push).
-- **v3** — weekly public reports + dataset releases; Bridge/CYBERAGENT integration (findings become objectives); SENTINEL alerting on aggressive sources; Telnet IAC stripping; ASN enrichment; richer timelines.
+- **v2 (this)** — full SSH-2 key exchange + credential capture (pure-Python transport), Telnet IAC stripping, central token-gated collector for multi-host fleets (`push` / `collect-server`), per-sensor-host report breakdown, ASN enrichment in reports, weekly report automation (cron/systemd + git auto-commit/push).
+- **v3** — weekly public reports + dataset releases; Bridge/CYBERAGENT integration (findings become objectives); SENTINEL alerting on aggressive sources; richer timelines.
 
 ## Layout
 
