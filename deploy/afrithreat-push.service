@@ -1,0 +1,12 @@
+[Unit]
+Description=AFRITHREAT push local events to the central collect-server
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+# Adjust WorkingDirectory to the sensor host's AFRITHREAT checkout.
+WorkingDirectory=/opt/afrithreat
+ExecStart=/usr/bin/python3 -m afrithreat push --config config.json
+NoNewPrivileges=true
+PrivateTmp=true

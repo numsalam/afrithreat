@@ -1,0 +1,13 @@
+[Unit]
+Description=AFRITHREAT weekly threat report (generate + git commit + push)
+Documentation=https://github.com/numsalam/afrithreat
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+# Adjust WorkingDirectory to wherever AFRITHREAT is deployed.
+WorkingDirectory=/opt/afrithreat
+ExecStart=/usr/bin/python3 -m afrithreat report --config config.json --out reports --commit --push
+NoNewPrivileges=true
+PrivateTmp=true

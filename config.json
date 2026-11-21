@@ -1,0 +1,35 @@
+{
+  "sensors": [
+    {"name": "http-1", "protocol": "http", "port": 8080, "bind": "127.0.0.1"},
+    {"name": "telnet-1", "protocol": "telnet", "port": 2323, "bind": "127.0.0.1"},
+    {"name": "ssh-1", "protocol": "ssh", "port": 2222, "bind": "127.0.0.1"}
+  ],
+  "data_dir": "data",
+  "report": {
+    "title": "AFRITHREAT Weekly Threat Report",
+    "lookback_hours": 168
+  },
+  "limits": {
+    "max_line_bytes": 4096,
+    "socket_timeout": 30.0,
+    "max_connections_per_ip": 200
+  },
+  "enrich": {
+    "csv_path": null
+  },
+  "collector": {
+    "sensor_host": null,
+    "ingest_url": "http://127.0.0.1:8090/ingest",
+    "token": null,
+    "batch_lines": 500,
+    "timeout": 15.0
+  },
+  "ingest": {
+    "bind": "127.0.0.1",
+    "port": 8090,
+    "token": null,
+    "max_body_bytes": 8388608,
+    "max_events_per_batch": 5000,
+    "max_event_bytes": 65536
+  }
+}

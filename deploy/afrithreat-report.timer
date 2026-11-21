@@ -1,0 +1,11 @@
+[Unit]
+Description=Run the AFRITHREAT weekly report Sunday 06:00
+
+[Timer]
+OnCalendar=Sun *-*-* 06:00:00
+# catch up after missed runs (host was off / asleep)
+Persistent=true
+Unit=afrithreat-report.service
+
+[Install]
+WantedBy=timers.target
